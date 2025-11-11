@@ -58,5 +58,26 @@ Using the medusa command:
 
 medusa -u robin -P /usr/share/wordlists/rockyou.txt -h <ip> -M ftp
 
+HTB{ATT4CK1NG_F7P_53RV1C3}
 
- 
+
+## SMB
+
+Server Message Block (SMB) is a communication protocol created for providing shared access to files and printers across nodes on a network. Initially, it was designed to run on top of NetBIOS over TCP/IP (NBT) using TCP port 139 and UDP ports 137 and 138. However, with Windows 2000, Microsoft added the option to run SMB directly over TCP/IP on port 445 without the extra NetBIOS layer. Nowadays, modern Windows operating systems use SMB over TCP but still support the NetBIOS implementation as a failover.
+
+### Enumeration 
+
+<img width="1018" height="471" alt="image" src="https://github.com/user-attachments/assets/f4ec5fef-8c65-4359-800d-7d90e59b4d15" />
+
+Command:
+
+sudo nmap <ip> -sV -sC -p139,445
+
+ ### File share
+
+ <img width="1077" height="278" alt="image" src="https://github.com/user-attachments/assets/00c28b9d-8554-4b5c-ad04-2cf2beefd25a" />
+
+ Command:
+
+ smbclient -N -L //<ip>
+
