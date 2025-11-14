@@ -11,7 +11,7 @@ An incident is an event with a negative consequence, a system crash is a good ex
 
 **Incident handling be defined through the following graph.**
 
-<figure><img src=".gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Please see the following Real-World Incidents
 
@@ -47,11 +47,11 @@ Please see the following Real-World Incidents
 
 This Lifecycle describes how attacks manifest themselves.&#x20;
 
-<figure><img src=".gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Stages Of The Cyber Kill Chain**
 
-1. Recon - The initial stage where the attacker chooses their target. The attacker will perform information gathering from web sources, and documentation on the targets organisations website.![](<.gitbook/assets/image (4).png>)
+1. Recon - The initial stage where the attacker chooses their target. The attacker will perform information gathering from web sources, and documentation on the targets organisations website.![](<.gitbook/assets/image (4) (1).png>)
 2. Weaponise - Malware to be used for initial access is developed and embedded into some type of exploit.
 3. Delivery - The exploit or payload is delivered to the victim, traditionally done through phishing emails.
 4. Exploitation - The moment where the exploit is triggered, the attacker attempts to execute code on the target system.
