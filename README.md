@@ -11,7 +11,7 @@ An incident is an event with a negative consequence, a system crash is a good ex
 
 **Incident handling be defined through the following graph.**
 
-<figure><img src=".gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Please see the following Real-World Incidents
 
@@ -47,7 +47,7 @@ Please see the following Real-World Incidents
 
 This Lifecycle describes how attacks manifest themselves.&#x20;
 
-<figure><img src=".gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **Stages Of The Cyber Kill Chain**
 

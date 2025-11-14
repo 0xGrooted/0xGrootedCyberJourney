@@ -962,7 +962,7 @@ htb-student@remnux:~$
 
 ### Autopsy
 
-<figure><img src=".gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 this will be used more in the upcoming practical!
 
@@ -972,7 +972,7 @@ Launch MTFExplorer here: C:\Users\johndoe\Desktop\Get-ZimmermanTools\net6\MFTExp
 
 We can find the following from MFTExplorer:&#x20;
 
-<figure><img src=".gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <details>
 
@@ -1051,7 +1051,7 @@ As we can see from the above the file creation date has been modified from 2022-
 
 $MFT file - (Master File Table) an integral part of the NFTS, it offers granular record of file and directory activities on the system like file creation, modification, deletion and access.&#x20;
 
-<figure><img src=".gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 <details>
 

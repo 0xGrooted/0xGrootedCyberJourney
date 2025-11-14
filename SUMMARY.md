@@ -6,3 +6,4 @@
 * [Understanding Log Sources & Investigating with Splunk](understanding-log-sources-and-investigating-with-splunk.md)
 * [Introduction to Network Traffic Analysis](introduction-to-network-traffic-analysis.md)
 * [Introduction to Digital Forensics](introduction-to-digital-forensics.md)
+* [Introduction To Malware Analysis](introduction-to-malware-analysis.md)
